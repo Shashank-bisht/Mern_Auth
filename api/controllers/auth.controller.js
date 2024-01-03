@@ -31,15 +31,22 @@ export const signin = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const validUser = await User.findOne({ email });
-    if (!validUser) return next(errorHandler(401, "invalid email or password"));
+    // if user not found then send error
+    if (!validUser) {
+      return next(errorHandler(401, "Invalid email or password"));
+    }
+    // if user found then compare password
     const validPassword = await bcryptjs.compare(password, validUser.password);
-    if (!validPassword)
-      return next(errorHandler(401, "invalid email or password"));
+    // if password not matched then send error
+    if (!validPassword) {
+      return next(errorHandler(401, "Invalid email or password"));
+    }
+    // if password matched then generate token using id
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    res.cookie('access_token', token, { httpOnly: true }).status(200).json(validUser)
-    res.status(200).json({ token });
+    const { password: hashedPassword, ...rest } = validUser._doc;
+    res.cookie('access_token', token, { httpOnly: true }).status(200).json(rest);
   } catch (error) {
     next(error);
   }
