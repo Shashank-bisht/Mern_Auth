@@ -33,14 +33,15 @@ const Signin = () => {
         // The body: JSON.stringify(formData) part of a fetch request is used to convert a JavaScript object (formData) into a JSON-formatted string. This is necessary when sending data in the body of an HTTP request, especially when the server expects JSON data.
       });
       const data = await res.json();
-      dispatch(signInSuccess(data));
-      if (!res.ok) {
+      if (data.success === false) {
         // Handle the case where the server responds with an error
-        const errorData = await res.json();
+        // const errorData = await res.json();
         // setLoading(false);
-        dispatch(signInFailure(errorData));
+        dispatch(signInFailure(data));
+        return;
         // setError(true);
       }
+      dispatch(signInSuccess(data));
       navigate('/')
     } catch (error) {
       dispatch(signInFailure(error));
