@@ -5,20 +5,23 @@ import { getDownloadURL, getStorage } from "firebase/storage";
 import { app } from "../firebase";
 import { ref, uploadBytesResumable } from "firebase/storage";
 import {useDispatch} from 'react-redux'
-import {updateUserStart, updateUserSuccess, updateUserFailure} from '../redux/user/userSlice'
+import {updateUserStart, updateUserSuccess, updateUserFailure, deleteUserStart, deleteUserSuccess, deleteUserFailure, signout} from '../redux/user/userSlice'
+
 const Profile = () => {
   const fileRef = useRef(null);
   const dispatch = useDispatch()
   const [image, setImage] = useState(undefined);
   const [imagePercent, setImagePercent] = useState(0);
   const [formData, setFormData] = useState({});
-  console.log(formData);
+  
   const [imageError, setImageError] = useState(false);
   const [updatesuccess, setupdatesuccess] = useState(false)
   const { currentUser, loading, error } = useSelector((state) => state.user);
+
   useEffect(() => {
     if (image) {
       handleFileUpload(image);
+
     }
   }, [image]);
 
@@ -45,6 +48,7 @@ const Profile = () => {
             ...formData,
             profilePicture: downloadURL,
           });
+       
         });
       }
     );
@@ -75,6 +79,32 @@ const Profile = () => {
       setupdatesuccess(true)
     }catch(error){
   dispatch(updateUserFailure(error))
+    }
+  }
+
+  const handlesignout = async() => {
+    try {
+      await fetch ('/api/auth/signout')
+      dispatch(signout())
+    } catch (error) {
+    console.log(error)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    try {
+      dispatch(deleteUserStart())
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      })
+      const data = await res.json()
+      if(data.success===false){
+        dispatch(deleteUserFailure(data))
+        return
+      }
+      dispatch(deleteUserSuccess())
+    }catch(error){
+      dispatch(deleteUserFailure(error))
     }
   }
   console.log(formData)
@@ -133,10 +163,10 @@ const Profile = () => {
         </button>
       </form>
       <div className="flex flex-row items-center gap-3 justify-evenly mt-7">
-        <span className="text-red-700 cursor-pointer ">Delete</span>
+        <span onClick={handleDeleteAccount} className="text-red-700 cursor-pointer ">Delete</span>
         <div><p className="text-red-700 ">{error && "Something went wrong"}</p>
       <p className="text-green-700 ">{updatesuccess && "Profile updated successfully"}</p></div>
-        <span className="text-red-700 cursor-pointer ">Sign Out</span>
+        <span onClick={handlesignout} className="text-red-700 cursor-pointer ">Sign Out</span>
       </div>
     </div>
   );
