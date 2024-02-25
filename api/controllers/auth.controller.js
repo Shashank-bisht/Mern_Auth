@@ -2,10 +2,13 @@ import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from "jsonwebtoken";
-
+import nodemailer from "nodemailer";
 export const signup = async (req, res, next) => {
   // console.log(req.body)
   const { username, email, password } = req.body;
+  if (!username || !email || !password) {
+    return res.status(400).json({ message: "Username and email are required" });
+  }
   // Check if the username or email already exists
   const existingUser = await User.findOne({ $or: [{ username }, { email }] });
 
@@ -118,6 +121,57 @@ export const google = async (req, res, next) => {
   }
 };
 
+export const forgetpass = async (req, res, next) => {
+  const { email } = req.body;
+  User.findOne({ email: email }).then((user) => {
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    })
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'shashankbisht53734@gmail.com',
+        pass: 'sowrdkhccrpwdece'
+      }
+    });
+    
+    var mailOptions = {
+      from: 'shashankbisht53734@gmail.com',
+      to: email,
+      subject: 'Reset your Password',
+      text: 'Click on the link below to reset your password. \n\n' + `http://localhost:5173/reset-password/${user._id}/` + token
+    };
+    
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+       return res.status(200).json({ message: "Email sent: " + info.response });
+      }
+    });
+  })
+}
+
+export const resetPassword = async (req, res, next) => {
+  const {id, token} = req.params
+  const {password} = req.body
+  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: "Invalid or expired token" })
+    }else{
+        bcryptjs.hash(password, 10).then(hashedPassword => {
+        User.findOneAndUpdate({_id: id}, {password: hashedPassword}).then(()=>{
+          res.status(200).json({message: "Password updated successfully"})
+        }).catch(err => {
+          next(err)
+        })
+      })
+    }
+  })
+}
 
 export const signout = (req, res) => {
   res.clearCookie("access_token").status(200).json("User has been signed out.");

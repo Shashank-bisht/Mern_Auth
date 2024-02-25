@@ -80,11 +80,14 @@ const Signin = () => {
         </button>
         <OAuth />
       </form>
-      <div className="flex gap-2 mt-5">
-        <p>Don't Have an account?</p>
+      <div className="flex justify-between gap-2 mt-5">
+        <div className="flex gap-2"><p>Don't Have an account?</p>
         <Link to="/sign-up">
           <span className="text-blue-700">Sign up</span>
-        </Link>
+        </Link></div>  
+         <Link to='/forgot-passowrd'>
+         <span className="text-blue-700 float-right">Forgot Password?</span>
+         </Link> 
       </div>
       <p className="text-red-500">
         {/* if error is true show this statement */}

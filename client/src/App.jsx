@@ -7,6 +7,8 @@ import About from "./pages/About";
 import Profile from "./pages/Profile";
 import Header from "./components/Header";
 import PrivatRoute from "./components/PrivatRoute";
+import Forgot from "./pages/Forgot";
+import Resetpassword from "./pages/Resetpassword";
 const App = () => {
   return (
     <BrowserRouter>
@@ -19,6 +21,8 @@ const App = () => {
         <Route  element={<PrivatRoute/>} >
         <Route path="/profile" element={<Profile />} />
         </Route>
+        <Route path="/forgot-passowrd" element={<Forgot />} />
+        <Route path="/reset-password/:id/:token" element={<Resetpassword />} />
       </Routes>
     </BrowserRouter>
   );

@@ -11,9 +11,10 @@ const Profile = () => {
   const fileRef = useRef(null);
   const dispatch = useDispatch()
   const [image, setImage] = useState(undefined);
+  const [showMessage, setShowMessage] = useState(false);
   const [imagePercent, setImagePercent] = useState(0);
   const [formData, setFormData] = useState({});
-  
+  const [Error, setError] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [updatesuccess, setupdatesuccess] = useState(false)
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -24,6 +25,8 @@ const Profile = () => {
 
     }
   }, [image]);
+
+
 
   const handleFileUpload = async (image) => {
     const storage = getStorage(app);
@@ -54,6 +57,8 @@ const Profile = () => {
     );
   };
 
+ 
+
   const handleChange = (e) => {
     setFormData({
       ...formData,[e.target.id]: e.target.value
@@ -71,15 +76,24 @@ const Profile = () => {
         body: JSON.stringify(formData)
       })
       const data = await res.json()
+      console.log(res)
       if(data.success===false){
+        console.log(data)
         dispatch(updateUserFailure(data))
-        return
+        return 
+      }else{
+        dispatch(updateUserSuccess(data))
+        setupdatesuccess(true)
+         // Show the message
+        setShowMessage(true);
+        // Hide the message after 3 seconds
+        setTimeout(() => {
+        setShowMessage(false);
+      }, 3000);
       }
-      dispatch(updateUserSuccess(data))
-      setupdatesuccess(true)
-    }catch(error){
-  dispatch(updateUserFailure(error))
-    }
+      }catch(error){
+        dispatch(updateUserFailure(error))
+      }   
   }
 
   const handlesignout = async() => {
@@ -107,7 +121,6 @@ const Profile = () => {
       dispatch(deleteUserFailure(error))
     }
   }
-  console.log(formData)
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -152,7 +165,7 @@ const Profile = () => {
           className="bg-gray-100 rounded-lg w-4/5 h-11 px-3 py-1"
         />
         <input onChange={handleChange}
-          type="password"
+          type="password" 
           id="password"
           placeholder="Password"
           className="bg-gray-100 rounded-lg w-4/5 h-11 px-3 py-1"
@@ -165,7 +178,7 @@ const Profile = () => {
       <div className="flex flex-row items-center gap-3 justify-evenly mt-7">
         <span onClick={handleDeleteAccount} className="text-red-700 cursor-pointer ">Delete</span>
         <div><p className="text-red-700 ">{error && "Something went wrong"}</p>
-      <p className="text-green-700 ">{updatesuccess && "Profile updated successfully"}</p></div>
+      <p className="text-green-700 "> {showMessage && <div>Profile updated successfully</div>}</p></div>
         <span onClick={handlesignout} className="text-red-700 cursor-pointer ">Sign Out</span>
       </div>
     </div>

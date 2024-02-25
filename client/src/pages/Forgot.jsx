@@ -3,12 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import OAuth from "../components/OAuth";
 
-const Signup = () => {
+const Forgot = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({});
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-
+  const [message, setmessage] = useState("");
+ 
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -23,9 +23,8 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
       // see vite.config.js file for path realted query
-      const res = await fetch("/api/auth/signup", {
+      const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,7 +33,7 @@ const Signup = () => {
         body: JSON.stringify(formData),
         // The body: JSON.stringify(formData) part of a fetch request is used to convert a JavaScript object (formData) into a JSON-formatted string. This is necessary when sending data in the body of an HTTP request, especially when the server expects JSON data.
       });
-      setLoading(false);
+    
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -42,11 +41,10 @@ const Signup = () => {
         setError(true);
       } else {
         // Redirect to sign-in page only if the signup is successful
-        navigate("/sign-in");
+        setmessage("Check your email for further instructions");
       }
 
     } catch (error) {
-      setLoading(false);
       setError(true);
     }
   };
@@ -54,17 +52,9 @@ const Signup = () => {
 
   return (
     <div className="p-3 max-w-lg mx-auto">
-      <h1 className="text-3xl text-center font-semibold my-7">Signup</h1>
+      <h1 className="text-3xl text-center font-semibold my-7">Enter Your Email</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 ">
-        {/* username */}
-        <input
-          type="text"
-          placeholder="Username"
-          id="username"
-          className="bg-slate-100 p-3 rounded-lg"
-          onChange={handleChange}
-        />
         {/* email */}
         <input
           type="email"
@@ -73,26 +63,11 @@ const Signup = () => {
           className="bg-slate-100 p-3 rounded-lg"
           onChange={handleChange}
         />
-        {/* password */}
-        <input
-          type="password"
-          placeholder="Password"
-          id="password"
-          className="bg-slate-100 p-3 rounded-lg"
-          onChange={handleChange}
-        />
-
         <button className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-75 disabled:opacity-70">
-          {loading ? "loading..." : "Sign Up"}
+          Send
         </button>
-        <OAuth />
       </form>
-      <div className="flex gap-2 mt-5">
-        <p>Have an account?</p>
-        <Link to="/sign-in">
-          <span className="text-blue-700">Sign in</span>
-        </Link>
-      </div>
+      <p className="text-green-500">{message}</p>
       <p className="text-red-500">
         {/* if error is true show this statement */}
         {error && "Something went wrong"}
@@ -101,4 +76,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Forgot;
